@@ -2,22 +2,23 @@ import {useRouter} from 'next/router'
 import axios from "axios";
 
 
+// @ts-ignore
 export async function getServerSideProps(context) {
     let data = {}
     try {
         const id = context.query.id as string;
-        const data = (await axios.get(`http://localhost:9090/api/user/qrcode/${id}`)).data;
+        const data = (await axios.get(`${process.env.PROVIDER_SERVER}/api/user/qrcode/${id}`)).data;
         return {props: {data}}
     } catch (e) {
         return {props: data}
     }
 }
 
+// @ts-ignore
 const User = ({data}) => {
     if (!!!data?.data) return (<h1>Not found</h1>);
-
     let {name, linkedin, gitHub} = data.data;
-    name = name.replaceAll('-', ' ');
+    name = String(name).replace('-', ' ');
     return (
         <>
             <div className="container p-5 ">

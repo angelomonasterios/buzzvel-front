@@ -5,21 +5,27 @@ import {TextGroup} from "./inputs";
 import Swal from 'sweetalert2'
 import axios from "axios";
 
-
-const initialFormState = {
-    name: '',
-    gitHub: '',
-    linkedin: ''
+type FormType = {
+    name: String | any,
+    gitHub: String | any,
+    linkedin: String | any
 }
 
+
 export const FormGenerateQr = () => {
-    const [form, setform] = useState(initialFormState);
-    const [errors, setErrors] = useState({});
+    const initialFormState: FormType = {
+        name: '',
+        gitHub: '',
+        linkedin: ''
+    }
+
+    const [form, setForm] = useState(initialFormState);
+    const [errors, setErrors] = useState(initialFormState);
     const [imageqr, setImageqr] = useState('');
 
     const validate = async (event: { preventDefault: () => void; }) => {
         event.preventDefault();
-        let errors = {}
+        let errors = {gitHub: undefined, linkedin: undefined, name: undefined};
 
         try {
             await FormValidations.validate(form, {abortEarly: false})
@@ -32,16 +38,16 @@ export const FormGenerateQr = () => {
                 })
                 setErrors(errors)
             }
-
-        }
-        if (Object.keys(errors).length == 0) {
-            await send()
+            return
         }
 
+        await send()
     }
 
-    const setInput = ({newValue}: { newValue: any }) => {
-        setform(form => ({...form, ...newValue}))
+    // @ts-ignore
+    const setInputs = (newValue) => {
+        console.log(newValue)
+        setForm(form => ({...form, ...newValue}))
     }
 
     const send = async () => {
@@ -64,11 +70,11 @@ export const FormGenerateQr = () => {
 
             Swal.close()
 
-            if (!!dataResponse.data.url){
+            if (!!dataResponse.data.url) {
                 setImageqr(dataResponse.data.url)
                 Swal.fire({
                     icon: 'success',
-                    html: '<a href="'+dataResponse.data.url+'" class="btn btn-success" download>Download</a>',
+                    html: '<a href="/api' + dataResponse.data.url + '" class="btn btn-success" download>Download</a>',
                     title: 'Image Created ',
                     text: 'Download image',
                 })
@@ -84,11 +90,15 @@ export const FormGenerateQr = () => {
             }
 
         } catch (e) {
-            let errorResponse = e.request?.responseText ?? false;
+            // @ts-ignore
+            const {request} = e;
+            // @ts-ignore
+            const message = e.message
+            let errorResponse = request ?? message;
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
-                text: errorResponse ?? e.message,
+                text: errorResponse,
             })
         }
     }
@@ -104,12 +114,26 @@ export const FormGenerateQr = () => {
                 <div className="row">
                     <div className="col-12">
                         <form onSubmit={validate}>
-                            <TextGroup error={errors.name} id={'name'} name={'name'}
-                                       onChange={e => setInput({newValue: {name: e.target.value}})}/>
-                            <TextGroup error={errors.linkedin} id={'Linkedin'} name={'Linkedin URL'}
-                                       onChange={e => setInput({newValue: {linkedin: e.target.value}})}/>
-                            <TextGroup error={errors.gitHub} id={'Github'} name={'Github  URL'}
-                                       onChange={e => setInput({newValue: {gitHub: e.target.value}})}/>
+                            <TextGroup
+                                error={errors.name} id={'name'} name={'name'}
+                                onChange={(
+                                    e: { target: { value: any; }; }) => setInputs({name: e.target.value}
+                                )}
+                            />
+                            <TextGroup
+                                error={errors.linkedin} id={'Linkedin'}
+                                name={'Linkedin URL'}
+                                onChange={(
+                                    e: { target: { value: ''; }; }) => setInputs({linkedin: e.target.value}
+                                )}
+                            />
+                            <TextGroup
+                                error={errors.gitHub} id={'Github'}
+                                name={'Github  URL'}
+                                onChange={(
+                                    e: { target: { value: any; }; }) => setInputs({gitHub: e.target.value}
+                                )}
+                            />
 
                             <button type="submit" className="btn btn-outline-dark btn-lg w-50">
                                 Generate Image

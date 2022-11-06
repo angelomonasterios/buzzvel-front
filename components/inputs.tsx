@@ -2,13 +2,14 @@ import {useState} from "react";
 import {AppProps} from "next/app";
 
 type props = {
-    name: string,
-    id: string,
-    error?: string
+    name: String|any,
+    id: String|any,
+    error?: String|any
+    onChange: String|any
 
 }
 
-export const TextGroup = ({name, id, error , ...rest}: props) => {
+export const TextGroup = ({name, id, error, ...rest}: props) => {
     const [input, setInput] = useState(false);
 
     return (
